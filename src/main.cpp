@@ -1,20 +1,22 @@
 #include <raylib.h>
 #include "ship.h"
-#include "enemy.h"
+#include "enemy_cylon.h"
+#include "enemy_xenomorph.h"
 #include <vector>
 #include <set>
-
+#include <memory>
 #define MIN(a, b) ((a)<(b)? (a):(b))
 
 #define VIRTUAL_WIDTH 1980
 #define VIRTUAL_HEIGHT 1080
 
+#define FACTORY_INDEX_ENEMY [Cylon, Xenomorph]
 
-
-void drawEnemies(std::vector<Enemy> enemies);
-void checkCollisionEnemies(const std::vector<Enemy> &enemies, Enemy &enemy);
-void moveEnemies(std::vector<Enemy> &enemies);
-void checkEnemyStatus(std::vector<Enemy> &enemies);
+void drawEnemies(const std::vector<std::unique_ptr<Enemy>> &enemies);
+void checkCollisionEnemies(const std::vector<std::unique_ptr<Enemy>> &enemies, Enemy &enemy);
+void moveEnemies(std::vector<std::unique_ptr<Enemy>> &enemies);
+void checkEnemyStatus(std::vector<std::unique_ptr<Enemy>> &enemies);
+std::unique_ptr<Enemy> createEnemy(const std::vector<std::unique_ptr<Enemy>> &enemies, const Texture2D &enemy_texture);
 
 int main() 
 {
@@ -30,36 +32,47 @@ int main()
     RenderTexture2D target = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); // evita blur
 
-    std::vector<Enemy> enemies;
+    std::vector<std::unique_ptr<Enemy>> enemies;
     Image enemy_image = LoadImage("assets/enemy-1.png");
     Texture2D enemy_texture = LoadTextureFromImage(enemy_image);
     SetTextureFilter(enemy_texture, TEXTURE_FILTER_POINT);
     float enemy_timer = 1.0f;
 
+    Font font = LoadFont("assets/fonts/Nowadays Italic.ttf");
 
     while (!WindowShouldClose())
     {
+        // ------------------ ENEMY UPDATES -----------------------------
         checkEnemyStatus(enemies);
+
+        // Enemy creation every second
         float dt = GetFrameTime();
         enemy_timer += dt;
         if(enemy_timer >= ENEMY_COOLDOWN_SPAWN){
-            Enemy enemy = Enemy(enemy_texture);
-            checkCollisionEnemies(enemies, enemy);
-            enemies.push_back(enemy);
+            auto enemy = createEnemy(enemies, enemy_texture);
+            
+            
+            checkCollisionEnemies(enemies, *enemy);
+            enemies.push_back(std::move(enemy));
             enemy_timer = 0.0f;
         }
-
-        ship.moveShip();
-        ship.shootLaser(enemies);
-        
         moveEnemies(enemies);
 
+
+        // ----------------- PLAYER'S SHIP UPDATE ---------------------------
+        ship.moveShip();
+        ship.shootLaser(enemies);
+
+
+        
+        // ----------------- DRAWING ----------------------------------------
         BeginTextureMode(target);
             ClearBackground(BLACK);
             ship.drawShip();
             ship.drawLasers();
             drawEnemies(enemies);
-
+            //ship.drawPoints(font);
+            DrawTextEx(font, "PRUEBA TEXTO 12345", {200, 200}, 56, 2, YELLOW);
         EndTextureMode();
 
                 // --- Escalar a la ventana real ---
@@ -93,20 +106,35 @@ int main()
 }
 
 
-void drawEnemies(std::vector<Enemy> enemies){
+std::unique_ptr<Enemy> createEnemy(const std::vector<std::unique_ptr<Enemy>> &enemies, const Texture2D &enemy_texture){
     
-    for (unsigned long long i = 0; i < enemies.size(); i++){
-        enemies[i].drawEnemy();
+    // Random type of enemy generation
+    switch (GetRandomValue(0, 4))
+    {
+    case 0 || 1 || 2 || 3:
+        return std::make_unique<Cylon>(enemy_texture);    
+    case 4:
+        return std::make_unique<Xenomorph>(enemy_texture);
+    default:
+        return nullptr;
     }
 }
 
-void checkCollisionEnemies(const std::vector<Enemy> &enemies, Enemy &enemy){
+
+void drawEnemies(const std::vector<std::unique_ptr<Enemy>> &enemies){
+    
+    for (unsigned long long i = 0; i < enemies.size(); i++){
+        enemies[i]->drawEnemy();
+    }
+}
+
+void checkCollisionEnemies(const std::vector<std::unique_ptr<Enemy>> &enemies, Enemy &enemy){
     
     bool collision;
     do {
         collision = false;
         for (size_t i = 0; i < enemies.size(); i++) {
-            if (CheckCollisionRecs(enemy.getEnemyBox(), enemies[i].getEnemyBox())) {
+            if (CheckCollisionRecs(enemy.getEnemyBox(), enemies[i]->getEnemyBox())) {
                 // Recolocar y volver a comprobar
                 enemy.setPosition({
                     (float)GetRandomValue(0, VIRTUAL_WIDTH - enemy.getWidth()),
@@ -119,16 +147,16 @@ void checkCollisionEnemies(const std::vector<Enemy> &enemies, Enemy &enemy){
     } while (collision);
 }
 
-void moveEnemies(std::vector<Enemy> &enemies){
+void moveEnemies(std::vector<std::unique_ptr<Enemy>> &enemies){
     for (size_t i = 0; i < enemies.size(); i++){
-        enemies[i].moveEnemy();
+        enemies[i]->moveEnemy();
     }
 }
 
-void checkEnemyStatus(std::vector<Enemy> &enemies){
+void checkEnemyStatus(std::vector<std::unique_ptr<Enemy>> &enemies){
     for (size_t i = 0; i < enemies.size(); i++){
-        if (enemies[i].needDestroy()){
-            enemies[i] = enemies.back();
+        if (enemies[i]->needDestroy()){
+            enemies[i] = std::move(enemies.back());
             enemies.pop_back();
             i--;
         }

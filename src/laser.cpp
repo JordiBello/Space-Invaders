@@ -22,7 +22,7 @@ Laser::Laser(const Ship &ship){
 
 Laser::~Laser(){}
 
-void Laser::moveLaser(std::vector<Enemy> &enemies){
+void Laser::moveLaser(std::vector<std::unique_ptr<Enemy>> &enemies){
     checkCollision(enemies);
     float new_position_y = getPosition().y + (getDirection().y * GetFrameTime() * getSpeed());
     setPosition({getPosition().x, new_position_y});
@@ -88,15 +88,15 @@ void Laser::setDestroy(const bool &destroy){
     this->destroy = destroy;
 }
 
-void Laser::checkCollision(std::vector<Enemy> &enemies){
+void Laser::checkCollision(std::vector<std::unique_ptr<Enemy>> &enemies){
     if (getPosition().y <= 0){
         setDestroy(true);
     }
     else{
         for (size_t i = 0; i < enemies.size(); i++){
-            if (CheckCollisionRecs(getLaserBox(), enemies[i].getEnemyBox())){
+            if (CheckCollisionRecs(getLaserBox(), enemies[i]->getEnemyBox())){
                 setDestroy(true);
-                enemies[i].setDestroy(true);
+                enemies[i]->setDestroy(true);
             }
         }
     }

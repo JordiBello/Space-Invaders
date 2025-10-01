@@ -119,7 +119,7 @@ Texture2D Ship::getLaserTexture() const{
     return this->laser_texture;
 }
 
-void Ship::shootLaser(std::vector<Enemy> &enemies){
+void Ship::shootLaser(std::vector<std::unique_ptr<Enemy>> &enemies){
     checkLaser();
     
     float dt = GetFrameTime();
@@ -156,3 +156,30 @@ void Ship::drawLasers(){
 void Ship::resetLaserTimer(){
     this->laser_timer = LASER_RESET_TIMER;
 }
+/*
+Vector2 Ship::getTextPosition() const{
+    return this->textPosition;
+}*/
+
+int Ship::getPoints() const{
+    return this->points;
+}
+
+void Ship::incrementPoints(){
+    this->points++;
+}
+
+void Ship::decrementPoints(){
+    this->points--;
+}
+
+void Ship::setPoints(const int &points){
+    this->points = points;
+}
+/*
+void Ship::drawPoints(const Font &font){
+    std::string text = "Points: " + std::to_string(getPoints());
+
+    const char* text_converted = text.c_str(); 
+    DrawTextEx(font, text_converted, getTextPosition(), float fontSize, float spacing, Color tint);
+}*/

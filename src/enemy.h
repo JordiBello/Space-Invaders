@@ -10,7 +10,8 @@
 #define ENEMY_MAX_SPEED 350
 #define ENEMY_MIN_SPEED 100
 #define ENEMY_INIT_POSITION_Y 900
-#define ENEMY_INIT_COLOR WHITE
+#define ENEMY_CYLON_COLOR WHITE
+#define ENEMY_XENOMORPH_COLOR BLUE
 #define ENEMY_INIT_DIRECTION {0, 1}
 #define ENEMY_INIT_WIDTH 64
 #define ENEMY_INIT_HEIGHT 72
@@ -28,10 +29,8 @@ class Enemy{
     private:
         Rectangle enemy_box;
         Texture2D enemy_texture;
-        Color color;
         Vector2 position;
         Vector2 direction;
-        int speed;
         int width;
         int height;
         Image enemy_image;
@@ -39,12 +38,11 @@ class Enemy{
 
     public:
         Enemy(Texture2D texture);
-        ~Enemy();
+        virtual ~Enemy();
 
-        void moveEnemy();
+        virtual void moveEnemy();
 
-        Color getColor() const;
-        void setColor(const Color &color);
+
 
         Vector2 getPosition() const;
         void setPosition(const Vector2 &position);
@@ -52,21 +50,22 @@ class Enemy{
         Vector2 getDirection() const;
         void setDirection(const Vector2 &direction);
         
-        int getSpeed() const;
-        void setSpeed(const int &speed);
+
 
         int getWidth() const;
         int getHeight() const;
 
         Texture2D getEnemyTexture() const;
 
-        void drawEnemy();
+        
 
         Rectangle getEnemyBox() const;
         void setEnemyBoxPositionY(float y);
 
         bool needDestroy() const;
         void setDestroy(const bool &destroy);
+        virtual void drawEnemy();
+
 };
 
 

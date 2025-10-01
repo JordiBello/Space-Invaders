@@ -4,6 +4,7 @@
 #include <string>
 #include <raylib.h>
 #include <vector>
+#include <memory>
 class Ship; // declaración adelantada
 class Enemy;
 
@@ -35,7 +36,7 @@ class Laser{
         Laser(const Ship &ship);
         ~Laser();
 
-        void moveLaser(std::vector<Enemy> &enemies);
+        void moveLaser(std::vector<std::unique_ptr<Enemy>> &enemies);
 
         Color getColor() const;
         void setColor(const Color &color);
@@ -59,7 +60,7 @@ class Laser{
         bool needDestroy() const;
         void setDestroy(const bool &destroy);
 
-        void checkCollision(std::vector<Enemy> &enemies);
+        void checkCollision(std::vector<std::unique_ptr<Enemy>> &enemies);
 
         Rectangle getLaserBox() const;
         void setLaserBoxPositionY(float y);

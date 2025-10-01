@@ -5,9 +5,10 @@
 #include <raylib.h>
 #include <vector>
 #include "laser.h"
+#include <memory>
 class Enemy;   // forward declaration
 
-#define SHIP_INIT_SPEED 600
+#define SHIP_INIT_SPEED 700
 #define SHIP_INIT_POSITION_Y 900
 #define SHIP_INIT_COLOR WHITE
 #define SHIP_INIT_DIRECTION {0, 0}
@@ -41,6 +42,8 @@ class Ship{
         float laser_timer;
         //std::vector<Sound> laser_sounds;
         Sound laser_sound_1;
+
+        int points;
     public:
         Ship();
         ~Ship();
@@ -66,7 +69,7 @@ class Ship{
 
         void drawShip();
 
-        void shootLaser(std::vector<Enemy> &enemies);
+        void shootLaser(std::vector<std::unique_ptr<Enemy>> &enemies);
 
         void checkLaser();
 
@@ -76,6 +79,14 @@ class Ship{
 
         float getLaserTimer() const;
         void resetLaserTimer();
+
+        Vector2 getTextPosition() const;
+
+        int getPoints() const;
+        void incrementPoints();
+        void decrementPoints();
+        void setPoints(const int &points);
+        void drawPoints(const Font &font);
 };
 
 
